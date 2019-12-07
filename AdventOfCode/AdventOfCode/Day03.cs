@@ -30,15 +30,15 @@ namespace AdventOfCode.Year2019
         //            ).ToArray());
 
 
-        public static IEnumerable<(int X, int Y)> ToCoords(this IEnumerable<Func<int, (int, int)>> deltas) =>
-            deltas.GetEnumerator().ToCoords((0, 0));
+        //public static IEnumerable<(int X, int Y)> ToCoords(this IEnumerable<Func<int, (int, int)>> deltas) =>
+        //    deltas.GetEnumerator().ToCoords((0, 0));
 
-        public static IEnumerable<(int DeltaX, int DeltaY)> GenerateDeltas(IEnumerable<string> instructions) =>
-            instructions.SelectMany(
-                    instructions.Select(
-                            x => VectorLookup[x[0]](int.Parse(x[1].ToString())
-                        )                            
-                )
+        //public static IEnumerable<(int DeltaX, int DeltaY)> GenerateDeltas(IEnumerable<string> instructions) =>
+        //    instructions.SelectMany(
+        //            instructions.Select(
+        //                    x => VectorLookup[x[0]](int.Parse(x[1].ToString())
+        //                )
+        //        );
 
     }
 
