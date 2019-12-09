@@ -87,7 +87,7 @@ namespace AdventOfCode.Year2019
         {
             var answer = Enumerable.Range(206938, 679128 - 206938)
                 .Count(x => SecureContainer.ValidateNumber2(x));
-            answer.Should().BeLessThan(0);
+            answer.Should().Be(1133);
         }
     }
 }

@@ -60,5 +60,9 @@ namespace AdventOfCode.Common
         public static bool Validate<T>(this T @this, params Func<T, bool>[] predicates) =>
             predicates.All(x => x(@this));
 
+        public static TOutput Match<TInput, TOutput>(this TInput @this, params (Func<TInput, bool> Predicate, Func<TInput, TOutput> Transform)[] matches) =>
+            matches.First(x => x.Predicate(@this))
+                .Map(x => x.Transform(@this));
+
     }
 }
