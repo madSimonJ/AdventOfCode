@@ -33,26 +33,26 @@ namespace AdventOfCode.Year2019.Common
         private static Func<int, bool> OpCode(params int[] codes) =>
             x => codes.Contains(x);
 
-        private static (int First, IEnumerable<int> Output) ProcessCommand(int[] input, int start = 0, int pInput = 0, IEnumerable<int> pOutput = null) =>
+        private static (int First, IEnumerable<int> Output) ProcessCommand(int[] input, int pInput = 0, int start = 0, IEnumerable<int> pOutput = null) =>
             input[start].Match(
                 (OpCode(99), _ => (input[0], pOutput)),
                 (OpCode(1, 2), _ => ProcessCommand(
                                         input.UpdateList(   input[start + 1],
                                                             input[start+2],
                                                             OpLookup[input[start]],
-                                                            input[start + 3]), start + 4, pInput, pOutput)
+                                                            input[start + 3]), pInput, start + 4, pOutput)
                     ),
                 (OpCode(3), _ => ProcessCommand(
                                     input.UpdateList(pInput, input[start + 1]),
-                                    start + 2,
                                     pInput,
+                                    start + 2,
                                     pOutput
                                 )),
                 (OpCode(4), _ => ProcessCommand(
                         input, 
-                        start + 2,
                         pInput,
-                        (pOutput ?? Enumerable.Empty<int>()).Concat(new[] { input[start+1]})
+                        start + 2,
+                        (pOutput ?? Enumerable.Empty<int>()).Concat(new[] { input[input[start+1]]})
                     )),
                 (x => x > 999, x => ProcessPrameterisedCommand(input, start, pInput, pOutput))
             );
@@ -68,21 +68,21 @@ namespace AdventOfCode.Year2019.Common
             .Map(x => (
                 Op: OpLookup[x.OpCode],
                 param1: x.Param1Type == 0 ? input[input[start+1]] : input[start+1],
-                param2: x.Param1Type == 0 ? input[input[start+2]] : input[start+2],
+                param2: x.Param2Type == 0 ? input[input[start+2]] : input[start+2],
                 param3: x.Param3Type == -1 ? -1 : x.Param1Type == 0 ? input[input[start + 3]] : input[start + 3],
                 outputLoc: input[start + 5]
             ))
             .Map(x => 
                 ProcessCommand(
                     input.UpdateList(x.Op(x.param1, x.param2).Map(y => x.param3 == -1 ? y : x.Op(y, x.param3)), x.outputLoc),
-                    x.param3 == -1 ? start + 4 : start + 5,
                     pInput,
+                    x.param3 == -1 ? start + 4 : start + 5,
                     pOutput
                 ));
 
 
-        public static (int First, IEnumerable<int> Output) Process(IEnumerable<int> input) =>
-            ProcessCommand(input.ToArray());
+        public static (int First, IEnumerable<int> Output) Process(IEnumerable<int> input, int pInput = 0) =>
+            ProcessCommand(input.ToArray(), pInput);
 
     }
 

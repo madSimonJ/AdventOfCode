@@ -18,15 +18,18 @@ namespace AdventOfCode.Year2019
             .Select(x => (x.Last(), x.First())).ToArray()
             .CalculateIndirectOrbits();
 
-        private static int DistanceToSanta(this IEnumerable<(string Body, string Orbits)> input, string curr, string dest, int noSteps = 0) =>
-            input.Where(x => x.Orbits == curr)
-                .Map(x =>
-                    x.Any()
-                        ? x.Min(y =>
-                            y.Body == dest
-                                ? noSteps
-                                : noSteps + DistanceToSanta(input, y.Body, dest, noSteps + 1))
-                        : int.MaxValue);
+        private static int DistanceToSanta(this IEnumerable<(string Body, string Orbits)> input, string curr, string dest, HashSet<string> alreadyVisited = null, int noSteps = 0) =>
+            input.Where(x => x.Body == curr).Select(x => x.Orbits)
+            .Concat(
+                input.Where(x => x.Orbits == curr).Select(x => x.Body)
+            ).Where(x => !alreadyVisited.Contains(x))
+            .Map(x =>
+                x.Any()
+                    ? x.Contains(dest)
+                        ? noSteps + 1
+                        : x.Min(y => DistanceToSanta(input, y, dest, alreadyVisited.Concat(new[] { curr }).ToHashSet(), noSteps + 1))
+                    : int.MaxValue
+            );
 
         public static int DistanceToSanta(IEnumerable<string> input) =>
             input.Select(x => x.Split(")"))
@@ -37,7 +40,7 @@ namespace AdventOfCode.Year2019
                 Input: x
             ))
             .Map(y => 
-                y.Input.DistanceToSanta(y.You, y.Santa)
+                y.Input.DistanceToSanta(y.You, y.Santa, new HashSet<string>())
             );
 
     }
@@ -96,6 +99,14 @@ namespace AdventOfCode.Year2019
 
             var answer = UniversalOrbitMap.DistanceToSanta(input);
             answer.Should().Be(4);
+        }
+
+        [Fact]
+        public void Day06b()
+        {
+            var input = ContentLoader.Load(2019, 6, x => x);
+            var answer = UniversalOrbitMap.DistanceToSanta(input);
+            answer.Should().Be(412);
         }
     }
 }
