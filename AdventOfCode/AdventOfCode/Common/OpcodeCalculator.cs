@@ -48,35 +48,35 @@ namespace AdventOfCode.Year2019.Common
                                     start + 2,
                                     pOutput
                                 )),
-                (OpCode(4), _ => ProcessCommand(
+                (OpCode(4, 104), _ => ProcessCommand(
                         input, 
                         pInput,
                         start + 2,
                         (pOutput ?? Enumerable.Empty<int>()).Concat(new[] { input[input[start+1]]})
                     )),
-                (x => x > 999, x => ProcessPrameterisedCommand(input, start, pInput, pOutput))
+                (x => x > 99, _ => ProcessPrameterisedCommand(input, start, pInput, pOutput))
             );
 
         private static (int First, IEnumerable<int> Output) ProcessPrameterisedCommand(int[] input, int start = 0, int pInput = 0, IEnumerable<int> pOutput = null) =>
             input[start].ToString()
             .Map(x => (
                 OpCode: int.Parse(x.Last().ToString()),
-                Param1Type: int.Parse(x[x.Length - 3].ToString()),
-                Param2Type: int.Parse(x[x.Length - 4].ToString()),
-                Param3Type: x.Length == 5 ? int.Parse(x[0].ToString()) : -1
+                Params: x.Take(x.Length - 2).Select(y => int.Parse(y.ToString())).Reverse()
             ))
             .Map(x => (
                 Op: OpLookup[x.OpCode],
-                param1: x.Param1Type == 0 ? input[input[start+1]] : input[start+1],
-                param2: x.Param2Type == 0 ? input[input[start+2]] : input[start+2],
-                param3: x.Param3Type == -1 ? -1 : x.Param1Type == 0 ? input[input[start + 3]] : input[start + 3],
-                outputLoc: input[start + 5]
+                Params: x.Params.Select((y, i) => 
+                    y.Match(
+                        (0, input[input[i + start + 1]]),
+                        (1, input[i + start + 1])
+                    )),
+                OutputLoc: input[start + x.Params.Count() + 3]
             ))
             .Map(x => 
                 ProcessCommand(
-                    input.UpdateList(x.Op(x.param1, x.param2).Map(y => x.param3 == -1 ? y : x.Op(y, x.param3)), x.outputLoc),
+                    input.UpdateList(x.Params.ApplyOperations(x.Op), x.OutputLoc),
                     pInput,
-                    x.param3 == -1 ? start + 4 : start + 5,
+                    start + x.Params.Count() + 2,
                     pOutput
                 ));
 

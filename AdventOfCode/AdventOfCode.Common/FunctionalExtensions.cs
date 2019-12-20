@@ -63,6 +63,12 @@ namespace AdventOfCode.Common
         public static TOutput Match<TInput, TOutput>(this TInput @this, params (Func<TInput, bool> cond, Func<TInput, TOutput> trans)[] f) =>
             f.First(x => x.cond(@this)).trans(@this);
 
+        public static TOutput Match<TInput, TOutput>(this TInput @this, params (TInput cond, Func<TInput, TOutput> trans)[] f) =>
+            f.First(x => Comparer<TInput>.Default.Compare(x.cond, @this) == 0).trans(@this);
+
+        public static TOutput Match<TInput, TOutput>(this TInput @this, params (TInput cond, TOutput trans)[] f) =>
+            f.First(x => Comparer<TInput>.Default.Compare(x.cond, @this) == 0).trans;
+
         private static IEnumerable<TOut> Select<TIn, TOut>(this IEnumerator<TIn> @this, Func<TIn, TIn, TOut> f, IEnumerable<TOut> acc) =>
             @this.Current
                 .Map(x =>
@@ -74,7 +80,16 @@ namespace AdventOfCode.Common
         public static IEnumerable<TOut> Select<TIn, TOut>(this IEnumerable<TIn> @this, Func<TIn, TIn, TOut> f) =>
             Select(@this.GetEnumerator(), f, Enumerable.Empty<TOut>());
 
+        public static T ApplyOperations<T>(this IEnumerator<T> @this, Func<T, T, T> op, T acc) =>
+            @this.MoveNext()
+                ? ApplyOperations(@this, op, op(acc, @this.Current))
+                : acc;
 
-
+        public static T ApplyOperations<T>(this IEnumerable<T> @this, Func<T, T, T> op) =>
+            @this.GetEnumerator()
+                .Map(x => x.MoveNext().Map(_ => x))
+                .Map(x =>
+                    ApplyOperations(x, op, x.Current)
+                );
     }
 }
